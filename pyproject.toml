@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools>=69.0", "wheel>=0.42.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "judgeloom-core"
+version = "0.1.0"
+description = "JudgeLoom — A modern, high-performance online judge platform built for competitive programming."
+readme = "README.md"
+license = {text = "AGPL-3.0-or-later"}
+requires-python = ">=3.12"
+authors = [
+    {name = "JudgeLoom Contributors"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Django :: 5.1",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education :: Computer Aided Instruction (CAI)",
+    "Topic :: Software Development :: Testing",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+src = ["."]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "RUF012", # mutable class variable (Django models need this)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "core", "apps", "services"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+strict = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.development"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.testing"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--tb=short",
+    "-ra",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks integration tests requiring external services",
+]
+
+[tool.coverage.run]
+source = ["apps", "core", "services"]
+omit = ["*/migrations/*", "*/tests/*", "*/management/*"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+fail_under = 80

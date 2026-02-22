@@ -1,0 +1,1 @@
+"""JudgeLoom configuration settings package."""
