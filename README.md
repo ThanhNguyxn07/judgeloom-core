@@ -1,72 +1,108 @@
-<!-- [Project Logo/Banner Placeholder] -->
+<div align="center">
+  <img src="https://raw.githubusercontent.com/judgeloom/judgeloom-core/master/docs/assets/logo.png" alt="JudgeLoom Logo" width="200" onerror="this.src='https://via.placeholder.com/200?text=JudgeLoom'">
+  
+  # 🚀 JudgeLoom
+  
+  **A Next-Generation, High-Performance Competitive Programming Online Judge Platform**
+  
+  [![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg?style=for-the-badge&logo=python)](https://www.python.org/)
+  [![Django Version](https://img.shields.io/badge/django-5.1%2B-092E20.svg?style=for-the-badge&logo=django)](https://www.djangoproject.com/)
+  [![PostgreSQL](https://img.shields.io/badge/postgres-16%2B-336791.svg?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+  [![Redis](https://img.shields.io/badge/redis-7%2B-DC382D.svg?style=for-the-badge&logo=redis)](https://redis.io/)
+  [![License](https://img.shields.io/badge/license-AGPL--3.0-brightgreen.svg?style=for-the-badge)](LICENSE)
+</div>
 
-# JudgeLoom
-**A modern, high-performance online judge platform**
+<br />
 
-JudgeLoom is a complete rewrite of the DMOJ/VNOJ online judge platform, designed for scalability, performance, and modern developer experience. It provides a robust foundation for hosting competitive programming contests and managing a large library of problems.
+> **JudgeLoom** is a complete, modern rewrite inspired by the classic DMOJ/VNOJ online judge platforms. It is designed from the ground up for scalability, sub-millisecond API performance, real-time WebSocket feedback, and a seamless developer experience. 
 
-## Feature Highlights
-- **Contest Formats**: Native support for IOI, ICPC, AtCoder, and ECOO formats.
-- **Real-time Judging**: Instant feedback via WebSocket integration using Django Channels.
-- **Ratings**: Elo-based rating system with historical tracking and leaderboards.
-- **REST API**: Fully documented API built with Django Ninja and OpenAPI.
-- **Async Processing**: High-throughput task execution powered by Celery and Redis.
-- **Plugin Architecture**: Extensible registry for custom contest formats and judge behaviors.
+---
 
-## Tech Stack
-| Component | Technology |
-| :--- | :--- |
-| **Framework** | Django 5.1+ |
-| **API Layer** | Django Ninja |
-| **Validation** | Pydantic v2 |
-| **Real-time** | Django Channels |
-| **Task Queue** | Celery |
-| **Broker/Cache** | Redis |
-| **Database** | PostgreSQL |
+## ✨ Feature Highlights
 
-## Project Structure
+* 🏆 **Native Contest Formats:** Full support for ICPC, IOI, AtCoder, and ECOO scoring formats.
+* ⚡ **Real-time Judging Feedback:** Watch your submission get judged instantly via Django Channels (WebSockets).
+* 📈 **Advanced Rating System:** Elo-based performance tracking, leaderboards, and historical rating graphs.
+* 🛡️ **Robust Security:** Secure JWT Authentication, isolated Judge Worker sandboxing, and strict rate-limiting.
+* 🧩 **Extensible Plugin Architecture:** Centralized registry to easily plug in custom contest formats or custom interactive judges.
+* 🚀 **Async Processing:** High-throughput job queues powered by Celery & Redis for asynchronous judging.
+* 📖 **Modern REST API:** Fully typed, auto-documented OpenAPI built with Django Ninja and Pydantic v2.
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology | Description |
+| :--- | :--- | :--- |
+| **Framework** | Django 5.1+ | Core MVC framework handling DB schemas & ORM |
+| **API Layer** | Django Ninja | Blazing fast REST API generation |
+| **Validation** | Pydantic v2 | Strict data validation & typing |
+| **Real-time** | Django Channels | WebSockets for live submission updates |
+| **Task Queue** | Celery | Background processing & judge dispatching |
+| **Broker/Cache** | Redis 7+ | In-memory message broker & cache |
+| **Database** | PostgreSQL 16+ | Primary relational database |
+| **Linting/Formatting** | Ruff | Extremely fast Python linter & code formatter |
+
+---
+
+## 📂 Project Structure
+
 ```text
 judgeloom-core/
-├── apps/           # Django applications
-├── config/         # Project configuration and settings
-├── core/           # Shared utilities and base classes
-├── requirements/   # Dependency specifications
-├── tests/          # Global test suite
-└── manage.py       # Django management script
+├── apps/                 # 📦 Modular Django applications (Domain Logic)
+│   ├── accounts/         # User authentication & profiles
+│   ├── contests/         # Contest management & rules
+│   ├── problems/         # Problem sets & test data pipelines
+│   ├── submissions/      # Submission tracking & real-time updates
+│   ├── judge/            # Judge worker communication bridge
+│   └── ...               # (ratings, content, tickets, etc.)
+├── config/               # ⚙️ Core project settings & WSGI/ASGI configurations
+├── core/                 # 🧠 Shared utilities, exceptions, and event pub/sub
+├── requirements/         # 📋 Python dependency specifications
+└── tests/                # 🧪 Comprehensive Pytest test suite
 ```
 
-## Quick Start
+---
 
-### Prerequisites
-- Python 3.12+
-- PostgreSQL 16+
-- Redis 7+
+## 🚀 Quick Start
 
-### Installation
+### 📋 Prerequisites
+Make sure you have the following installed:
+* Python 3.12 or higher
+* PostgreSQL 16+
+* Redis 7+
+* Git
+
+### 🔧 Installation & Setup
+
 1. **Clone the repository**
    ```bash
    git clone https://github.com/judgeloom/judgeloom-core.git
    cd judgeloom-core
    ```
 
-2. **Set up virtual environment**
+2. **Set up a virtual environment**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # Windows: venv\Scripts\activate
+   
+   # On macOS/Linux:
+   source venv/bin/activate  
+   # On Windows:
+   venv\Scripts\activate
    ```
 
 3. **Install dependencies**
    ```bash
-   pip install -r requirements/base.txt
+   pip install -r requirements/base.txt -r requirements/testing.txt
    ```
 
-4. **Configure environment**
+4. **Configure your environment**
    ```bash
    cp .env.example .env
-   # Edit .env with your database and redis credentials
    ```
+   *Open `.env` and fill in your database, Redis, and secret key configurations.*
 
-5. **Initialize database**
+5. **Initialize the database**
    ```bash
    python manage.py migrate
    python manage.py createsuperuser
@@ -74,47 +110,58 @@ judgeloom-core/
 
 6. **Run the development server**
    ```bash
+   # Terminal 1: Django Server
    python manage.py runserver
+   
+   # Terminal 2: Celery Worker (for background judging)
+   celery -A config worker -l INFO
    ```
 
-## Configuration
-JudgeLoom uses `django-environ` for configuration. All essential settings are defined in `.env.example`. Copy this file to `.env` and update the values to match your local environment. Key configurations include:
-- `DATABASE_URL`: PostgreSQL connection string.
-- `REDIS_URL`: Redis connection for caching.
-- `CELERY_BROKER_URL`: Redis connection for the task queue.
-- `CHANNEL_LAYERS_URL`: Redis connection for WebSockets.
+---
 
-## Architecture
-JudgeLoom follows a clean, maintainable architecture designed for long-term evolution:
-- **Service Layer Pattern**: Business logic is encapsulated in `@staticmethod` services within the `services/` directory, keeping models and views thin.
-- **Event-Driven**: Internal pub/sub mechanism for decoupled communication between apps.
-- **Plugin Registry**: A centralized registry allows for easy extension of contest formats and scoring rules without modifying core code.
+## 🏛️ Architecture & Best Practices
 
-## Apps Overview
-- **accounts**: User authentication, profiles, and permission management.
-- **organizations**: Multi-tenant organization support for schools and clubs.
-- **problems**: Problem management with support for multiple test case formats.
-- **submissions**: Real-time code submission processing and result tracking.
-- **contests**: Flexible contest management supporting various formats and rules.
-- **judge**: Communication bridge between the core platform and judge servers.
-- **content**: CMS for blog posts, announcements, and static pages.
-- **tickets**: Integrated support ticket system for user inquiries.
-- **ratings**: Elo-based rating system for competitive programming performance.
-- **tags**: Hierarchical tagging system for problems and content categorization.
+JudgeLoom avoids the "Fat Models, Fat Views" anti-pattern by strictly enforcing the **Service Layer Pattern**:
+- **Services (`services.py`):** Pure Python functions/classes holding business logic. Models and Views are kept thin.
+- **Event-Driven (`core.events`):** Apps communicate via an internal Publish/Subscribe mechanism to stay decoupled.
+- **Strict Typing:** All logic uses Python 3.12+ type hinting with `from __future__ import annotations`.
 
-## Development
-### Running Tests
-The project uses `pytest` for testing.
+---
+
+## 🧪 Development & Testing
+
+We enforce strict code quality using `pytest` and `ruff`.
+
+**Run the Test Suite:**
 ```bash
-pytest
+python -m pytest tests/ -v
 ```
 
-### Linting
-We use `ruff` for linting and formatting.
+**Run Linters & Formatters:**
 ```bash
-ruff check .
+ruff check . --fix
 ruff format .
 ```
 
-## License
-This project is licensed under the [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html).
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+1. Fork the project.
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3. Write tests and ensure all linters pass.
+4. Commit your changes (we use Conventional Commits).
+5. Push to the branch (`git push origin feature/AmazingFeature`).
+6. Open a Pull Request.
+
+---
+
+## 📄 License
+
+Distributed under the **GNU Affero General Public License v3.0**. See `LICENSE` for more information.
+
+---
+<div align="center">
+  <i>Developed with ❤️ for the Competitive Programming community.</i>
+</div>
