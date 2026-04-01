@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from django.db.models import Sum
+from django.db.models import Max, Sum
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
@@ -57,7 +57,7 @@ def update_user_stats_on_completion(
 
     points_aggregate = (
         accepted_submissions.values("problem_id")
-        .annotate(best=Sum("points"))
+        .annotate(best=Max("points"))
         .aggregate(total=Sum("best"))
     )
     total_points = points_aggregate.get("total") or 0.0

@@ -18,6 +18,48 @@ from core.exceptions import (
     PermissionDeniedError,
     ValidationError,
 )
+from core.permissions import JudgeLoomAuth
+
+
+class TestPermissions:
+    """Tests for core permissions."""
+
+    @pytest.mark.django_db
+    def test_judgeloom_auth_with_sub(self, user):
+        from apps.accounts.services.auth_service import AuthService
+        token = AuthService.generate_jwt_token(user)
+
+        auth = JudgeLoomAuth()
+        # Mock request
+        request = type("MockRequest", (), {})()
+        authenticated_user = auth.authenticate(request, token)
+
+        assert authenticated_user is not None
+        assert authenticated_user.pk == user.pk
+
+    @pytest.mark.django_db
+    def test_judgeloom_auth_with_user_id(self, user):
+        # Create a mock legacy token
+        import jwt
+        from datetime import datetime, timedelta, UTC
+        from django.conf import settings
+
+        now = datetime.now(UTC)
+        payload = {
+            "user_id": str(user.pk),
+            "type": "access",
+            "iat": int(now.timestamp()),
+            "exp": int((now + timedelta(hours=24)).timestamp()),
+        }
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+        auth = JudgeLoomAuth()
+        request = type("MockRequest", (), {})()
+        authenticated_user = auth.authenticate(request, token)
+
+        assert authenticated_user is not None
+        assert authenticated_user.pk == user.pk
+
 
 
 class TestCacheUtils:

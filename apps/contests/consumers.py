@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebSocketConsumer
 
+from apps.contests.models import Contest
+from apps.contests.services import ContestService
 from core.events import CONTEST_ENDED, CONTEST_RANKING_UPDATED, CONTEST_STARTED
 
 
@@ -19,12 +22,25 @@ class ContestConsumer(AsyncJsonWebSocketConsumer):
         The contest key is taken from the URL path and used to subscribe the
         connection to a channel-layer group named ``contest_{contest_key}``.
         """
-
+        user = self.scope.get("user")
         self.contest_key = self.scope["url_route"]["kwargs"]["contest_key"]
+
+        allowed = await self._can_see_contest(user=user, contest_key=self.contest_key)
+        if not allowed:
+            await self.close(code=4403)
+            return
+
         self.group_name = f"contest_{self.contest_key}"
 
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
+
+    @database_sync_to_async
+    def _can_see_contest(self, user: Any, contest_key: str) -> bool:
+        contest = Contest.objects.filter(key=contest_key).first()
+        if contest is None:
+            return False
+        return ContestService.can_see_contest(user=user, contest=contest)
 
     async def disconnect(self, close_code: int) -> None:
         """Leave the contest group on WebSocket disconnect.

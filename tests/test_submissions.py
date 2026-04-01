@@ -84,7 +84,7 @@ class TestSubmissionSignals:
 
     def test_user_stats_update_on_completed(self, user, problem, language):
         """Completing a submission updates user.problem_count."""
-        sub = SubmissionFactory(
+        SubmissionFactory(
             user=user,
             problem=problem,
             language=language,
@@ -94,3 +94,37 @@ class TestSubmissionSignals:
         )
         user.refresh_from_db()
         assert user.problem_count >= 1
+
+    def test_user_points_sum_best_per_problem(self, user, language):
+        """User points should sum best AC score per solved problem."""
+        first_problem = SubmissionFactory(user=user, language=language).problem
+        second_problem = SubmissionFactory(user=user, language=language).problem
+
+        SubmissionFactory(
+            user=user,
+            problem=first_problem,
+            language=language,
+            status=SubmissionStatus.COMPLETED,
+            result=SubmissionResult.AC,
+            points=30.0,
+        )
+        SubmissionFactory(
+            user=user,
+            problem=first_problem,
+            language=language,
+            status=SubmissionStatus.COMPLETED,
+            result=SubmissionResult.AC,
+            points=70.0,
+        )
+        SubmissionFactory(
+            user=user,
+            problem=second_problem,
+            language=language,
+            status=SubmissionStatus.COMPLETED,
+            result=SubmissionResult.AC,
+            points=50.0,
+        )
+
+        user.refresh_from_db()
+        assert user.points == 120.0
+        assert user.problem_count == 2

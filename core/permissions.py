@@ -17,6 +17,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import jwt
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from ninja.security import HttpBearer
 
@@ -41,10 +44,6 @@ class JudgeLoomAuth(HttpBearer):
         Returns:
             The authenticated User instance, or None if invalid.
         """
-        import jwt
-        from django.conf import settings
-        from django.contrib.auth import get_user_model
-
         UserModel = get_user_model()
 
         try:
@@ -56,8 +55,13 @@ class JudgeLoomAuth(HttpBearer):
         except (jwt.InvalidTokenError, jwt.ExpiredSignatureError):
             return None
 
+        # Auth service uses "sub" for user_id. Fallback to "user_id" for old tokens.
+        user_id = payload.get("sub") or payload.get("user_id")
+        if not user_id:
+            return None
+
         try:
-            user = UserModel.objects.get(pk=payload["user_id"], is_active=True)
+            user = UserModel.objects.get(pk=user_id, is_active=True, is_banned=False)
         except UserModel.DoesNotExist:
             return None
 

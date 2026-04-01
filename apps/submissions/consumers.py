@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebSocketConsumer
+
+from apps.submissions.models import Submission
+from apps.submissions.services import SubmissionService
 
 
 class SubmissionConsumer(AsyncJsonWebSocketConsumer):
@@ -12,10 +16,28 @@ class SubmissionConsumer(AsyncJsonWebSocketConsumer):
 
     async def connect(self) -> None:
         """Accept connection and subscribe client to the submission group."""
+        user = self.scope.get("user")
         submission_id = self.scope["url_route"]["kwargs"]["submission_id"]
+
+        if user is None or not getattr(user, "is_authenticated", False):
+            await self.close(code=4401)
+            return
+
+        allowed = await self._can_view_submission(user=user, submission_id=int(submission_id))
+        if not allowed:
+            await self.close(code=4403)
+            return
+
         self.group_name = f"submission_{submission_id}"
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
+
+    @database_sync_to_async
+    def _can_view_submission(self, user: Any, submission_id: int) -> bool:
+        submission = Submission.objects.select_related("problem").filter(pk=submission_id).first()
+        if submission is None:
+            return False
+        return SubmissionService.can_view_submission(user=user, submission=submission)
 
     async def disconnect(self, close_code: int) -> None:
         """Remove client from the submission group.

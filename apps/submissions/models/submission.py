@@ -88,13 +88,13 @@ class Submission(TimestampedModel):
         Returns:
             Percentage score in range 0-100.
         """
+        if self.result == SubmissionResult.AC:
+            return 100.0
         max_points = float(getattr(self.problem, "points", 0.0) or 0.0)
         if max_points > 0.0:
             return round((self.points / max_points) * 100.0, 2)
         if self.case_total > 0:
             return round((self.case_passed / self.case_total) * 100.0, 2)
-        if self.result == SubmissionResult.AC:
-            return 100.0
         return 0.0
 
     class Meta(TimestampedModel.Meta):
